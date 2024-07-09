@@ -7,7 +7,7 @@ int main()
     const int screenHeight = 544;
 
     InitWindow(screenWidth, screenHeight, "Flappy!");
-    SetTargetFPS(144);
+    SetTargetFPS(60);
 
     Player player = Player(screenWidth / 2, screenHeight / 2);
 

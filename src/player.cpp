@@ -3,17 +3,22 @@
 Player::Player(float positionX, float positionY)
 {
     bounds = Rectangle{positionX, positionY, 32, 32};
-    impulse = 6000;
-    gravity = 100;
+    impulse = -10000;
+    gravity = 0;
+    gravityIncrement = 400;
 }
 
 void Player::Update(float deltaTime)
 {
-    bounds.y += gravity * deltaTime;
-
-    if (IsKeyPressed(KEY_SPACE)) 
+    if (bounds.y < GetScreenHeight() - bounds.width)
     {
-        bounds.y -= impulse * deltaTime;
+        bounds.y += gravity * deltaTime;
+        gravity += gravityIncrement * deltaTime;
+    }
+
+    if (IsKeyPressed(KEY_SPACE))
+    {
+        gravity = impulse * deltaTime;
     }
 }
 
