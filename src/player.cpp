@@ -1,11 +1,17 @@
-#include "player.h"
+#include "Player.h"
 
 Player::Player(float positionX, float positionY)
 {
-    bounds = Rectangle{positionX, positionY, 32, 32};
+    sprite = LoadTexture("assets/images/yellowbird-midflap.png");
+    bounds = Rectangle{positionX, positionY, (float)sprite.width, (float)sprite.height};
     impulse = -10000;
     gravity = 0;
     gravityIncrement = 400;
+}
+
+Player::~Player()
+{
+    UnloadTexture(sprite);
 }
 
 void Player::Update(float deltaTime)
@@ -24,5 +30,6 @@ void Player::Update(float deltaTime)
 
 void Player::Draw()
 {
-    DrawRectangleRec(bounds, WHITE);
+    // Check DrawTextureEx for the sprite rotation
+    DrawTexture(sprite, bounds.x, bounds.y, WHITE);
 }

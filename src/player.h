@@ -6,6 +6,7 @@ class Player
 {
     public:
         Player(float positionX, float positionY);
+        ~Player();
         void Update(float deltaTime);
         void Draw();
 
@@ -13,6 +14,7 @@ class Player
         Rectangle bounds;
 
     private:
+        Texture2D sprite;
         float impulse;
         float gravity;
         float gravityIncrement;
