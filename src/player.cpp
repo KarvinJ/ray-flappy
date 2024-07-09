@@ -1,36 +1,23 @@
 #include "player.h"
 
-Player::Player(float positionX, float positionY, bool isPlayer1)
+Player::Player(float positionX, float positionY)
 {
-    bounds = Rectangle{positionX, positionY, 16 , 84};
-    speed = 800;
-    score = 0;
-    this->isPlayer1 = isPlayer1;
+    bounds = Rectangle{positionX, positionY, 32, 32};
+    impulse = 6000;
+    gravity = 100;
 }
 
 void Player::Update(float deltaTime)
 {
-    if (isPlayer1)
-    {
-       //El origen en raylib sucede en la esquina superior izquierda, debido a esto debo restar para subir y sumar para bajar.
-        if (IsKeyDown(KEY_W) && bounds.y >= 0)
-            bounds.y -= speed * deltaTime;
+    bounds.y += gravity * deltaTime;
 
-        if (IsKeyDown(KEY_S) && bounds.y <= GetScreenHeight() - bounds.height)
-            bounds.y += speed * deltaTime;
-    }
-    
-    else
+    if (IsKeyPressed(KEY_SPACE)) 
     {
-        if (IsKeyDown(KEY_UP) && bounds.y >= 0)
-            bounds.y -= speed * deltaTime;
-
-        if (IsKeyDown(KEY_DOWN) && bounds.y <= GetScreenHeight() - bounds.height)
-            bounds.y += speed * deltaTime;
+        bounds.y -= impulse * deltaTime;
     }
 }
 
 void Player::Draw()
 {
-    DrawRectangleRounded(bounds, 0.8, 0, WHITE);
+    DrawRectangleRec(bounds, WHITE);
 }
