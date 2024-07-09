@@ -30,6 +30,9 @@ void Player::Update(float deltaTime)
 
 void Player::Draw()
 {
-    // Check DrawTextureEx for the sprite rotation
     DrawTexture(sprite, bounds.x, bounds.y, WHITE);
+
+    // With this I can rotate sprite 45 degree and even increase the scale by 1.5.
+    //Gonna comment this for the time being.
+    // DrawTextureEx(sprite, {bounds.x, bounds.y}, 45, 1.5, WHITE);
 }
