@@ -29,8 +29,6 @@ int main()
 
         ClearBackground(Color{0, 0, 0, 0});
 
-        player.Draw();
-
         DrawTexture(background, 0, 0, WHITE);
         DrawTexture(background, background.width, 0, WHITE);
         DrawTexture(background, background.width * 2, 0, WHITE);
@@ -40,6 +38,8 @@ int main()
         DrawTexture(ground, ground.width, screenHeight - ground.height, WHITE);
         DrawTexture(ground, ground.width * 2, screenHeight - ground.height, WHITE);
         DrawTexture(ground, ground.width * 3, screenHeight - ground.height, WHITE);
+
+        player.Draw();
 
         EndDrawing();
     }
