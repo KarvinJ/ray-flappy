@@ -40,7 +40,7 @@ int main()
     Texture2D background = LoadTexture("assets/images/background-day.png");
     Texture2D ground = LoadTexture("assets/images/base.png");
 
-    Rectangle groundBounds = Rectangle{0, screenHeight - ground.height, screenWidth, ground.height};
+    Rectangle groundBounds = Rectangle{0, (float)(screenHeight - ground.height), screenWidth, (float)ground.height};
 
     upPipeSprite = LoadTexture("assets/images/pipe-green-180.png");
     downPipeSprite = LoadTexture("assets/images/pipe-green.png");

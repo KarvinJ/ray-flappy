@@ -24,7 +24,7 @@ void Player::Update(float deltaTime)
         gravity += gravityIncrement * deltaTime;
     }
 
-    if (IsKeyPressed(KEY_SPACE))
+    if (IsKeyPressed(KEY_SPACE) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
         gravity = impulse * deltaTime;
         PlaySound(flapSound);
