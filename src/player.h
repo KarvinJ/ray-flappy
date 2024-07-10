@@ -15,6 +15,7 @@ class Player
 
     private:
         Texture2D sprite;
+        Sound flapSound;
         float impulse;
         float gravity;
         float gravityIncrement;

@@ -4,6 +4,7 @@ Player::Player(float positionX, float positionY)
 {
     sprite = LoadTexture("assets/images/yellowbird-midflap.png");
     bounds = Rectangle{positionX, positionY, (float)sprite.width, (float)sprite.height};
+    flapSound = LoadSound("assets/sounds/wing.wav");
     impulse = -10000;
     gravity = 0;
     gravityIncrement = 400;
@@ -12,6 +13,7 @@ Player::Player(float positionX, float positionY)
 Player::~Player()
 {
     UnloadTexture(sprite);
+    UnloadSound(flapSound);
 }
 
 void Player::Update(float deltaTime)
@@ -25,6 +27,7 @@ void Player::Update(float deltaTime)
     if (IsKeyPressed(KEY_SPACE))
     {
         gravity = impulse * deltaTime;
+        PlaySound(flapSound);
     }
 }
 

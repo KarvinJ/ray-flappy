@@ -6,6 +6,8 @@
 const int screenWidth = 960;
 const int screenHeight = 544;
 
+bool isGameOver;
+
 Texture2D upPipeSprite;
 Texture2D downPipeSprite;
 
@@ -15,9 +17,7 @@ float lastPipeSpawnTime;
 
 void GeneratePipes()
 {
-    GetRandomValue(-200, 0);
-
-    float upPipePosition = GetRandomValue(-250, 0);
+    float upPipePosition = GetRandomValue(-220, 0);
 
     Pipe upPipe = Pipe(screenWidth, upPipePosition, upPipeSprite);
 
@@ -37,35 +37,51 @@ int main()
     InitWindow(screenWidth, screenHeight, "Flappy!");
     SetTargetFPS(60);
 
-    Player player = Player(screenWidth / 2, screenHeight / 2);
-
     Texture2D background = LoadTexture("assets/images/background-day.png");
-
     Texture2D ground = LoadTexture("assets/images/base.png");
+
+    Rectangle groundBounds = Rectangle{0, screenHeight - ground.height, screenWidth, ground.height};
 
     upPipeSprite = LoadTexture("assets/images/pipe-green-180.png");
     downPipeSprite = LoadTexture("assets/images/pipe-green.png");
 
     InitAudioDevice();
 
-    Sound hitSound = LoadSound("assets/sounds/okay.wav");
+    Sound dieSound = LoadSound("assets/sounds/die.wav");
+
+    Player player = Player(screenWidth / 2, screenHeight / 2);
 
     while (!WindowShouldClose())
     {
-        float deltaTime = GetFrameTime();
-
-        player.Update(deltaTime);
-
-        if (GetTime() - lastPipeSpawnTime >= 2)
+        if (!isGameOver)
         {
-            GeneratePipes();
+            float deltaTime = GetFrameTime();
+
+            player.Update(deltaTime);
+
+            if (CheckCollisionRecs(player.bounds, groundBounds))
+            {
+                isGameOver = true;
+                PlaySound(dieSound);
+            }
+
+            if (GetTime() - lastPipeSpawnTime >= 2)
+            {
+                GeneratePipes();
+            }
+
+            for (Pipe &pipe : pipes)
+            {
+                pipe.Update(deltaTime);
+
+                if (CheckCollisionRecs(player.bounds, pipe.bounds))
+                {
+                    isGameOver = true;
+                    PlaySound(dieSound);
+                }
+            }
         }
 
-        for (Pipe &pipe : pipes)
-        {
-            pipe.Update(deltaTime);
-        }
-    
         BeginDrawing();
 
         ClearBackground(Color{0, 0, 0, 0});
@@ -90,7 +106,9 @@ int main()
         EndDrawing();
     }
 
-    UnloadSound(hitSound);
+    UnloadTexture(upPipeSprite);
+    UnloadTexture(downPipeSprite);
+    UnloadSound(dieSound);
     CloseAudioDevice();
 
     CloseWindow();
