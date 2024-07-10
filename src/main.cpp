@@ -40,6 +40,11 @@ int main()
     Texture2D background = LoadTexture("assets/images/background-day.png");
     Texture2D ground = LoadTexture("assets/images/base.png");
 
+    //divide the birds.png
+    // Texture2D birds = LoadTexture("assets/images/birds.png");
+
+    // Rectangle birdsBounds = {0.0f, 0.0f, (float)birds.width / 9, (float)birds.height};
+
     Rectangle groundBounds = Rectangle{0, (float)(screenHeight - ground.height), screenWidth, (float)ground.height};
 
     upPipeSprite = LoadTexture("assets/images/pipe-green-180.png");
@@ -51,8 +56,27 @@ int main()
 
     Player player = Player(screenWidth / 2, screenHeight / 2);
 
+    // int framesCounter = 0;
+    // int framesSpeed = 8;
+
+    // int currentFrame = 0;
+
     while (!WindowShouldClose())
     {
+
+        // framesCounter++;
+
+        // if (framesCounter >= (60 / framesSpeed))
+        // {
+        //     framesCounter = 0;
+        //     currentFrame++;
+
+        //     if (currentFrame > 8)
+        //         currentFrame = 0;
+
+        //     birdsBounds.x = (float)currentFrame * (float)birdsBounds.width / 9;
+        // }
+
         if (!isGameOver)
         {
             float deltaTime = GetFrameTime();
@@ -102,6 +126,8 @@ int main()
         DrawTexture(ground, ground.width * 3, screenHeight - ground.height, WHITE);
 
         player.Draw();
+
+        // DrawTextureRec(birds, birdsBounds, {screenWidth/2, screenHeight/2}, WHITE);
 
         EndDrawing();
     }
