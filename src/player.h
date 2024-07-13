@@ -6,9 +6,7 @@ class Player
 {
     public:
         Player(float positionX, float positionY);
-        ~Player();
         void Update(float deltaTime);
-        void Draw();
 
     public:
         Rectangle bounds;

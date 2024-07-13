@@ -10,12 +10,6 @@ Player::Player(float positionX, float positionY)
     gravityIncrement = 400;
 }
 
-Player::~Player()
-{
-    // UnloadTexture(sprite);
-    // UnloadSound(flapSound);
-}
-
 void Player::Update(float deltaTime)
 {
     if (bounds.y < GetScreenHeight() - bounds.width)
@@ -29,13 +23,4 @@ void Player::Update(float deltaTime)
         gravity = impulse * deltaTime;
         PlaySound(flapSound);
     }
-}
-
-void Player::Draw()
-{
-    DrawTexture(sprite, bounds.x, bounds.y, WHITE);
-
-    // With this I can rotate sprite 45 degree and even increase the scale by 1.5.
-    //Gonna comment this for the time being.
-    // DrawTextureEx(sprite, {bounds.x, bounds.y}, 45, 1.5, WHITE);
 }

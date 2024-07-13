@@ -233,7 +233,7 @@ int main()
 
         BeginDrawing();
 
-        ClearBackground(Color{0, 0, 0, 0});
+        ClearBackground(BLACK);
 
         DrawTexture(background, 0, 0, WHITE);
         DrawTexture(background, background.width, 0, WHITE);
@@ -267,8 +267,6 @@ int main()
             DrawTexture(startGameBackground, screenWidth / 2 - 75, 103, WHITE);
         }
 
-        // player.Draw();
-
         DrawTextureRec(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y}, WHITE);
 
         EndDrawing();
@@ -280,5 +278,4 @@ int main()
     CloseAudioDevice();
 
     CloseWindow();
-    return 0;
 }
