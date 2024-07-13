@@ -9,6 +9,8 @@
 		"**/*.exe": true,
 	},
 	"files.associations": {
-		"random": "cpp"
+		"random": "cpp",
+		"*.m": "cpp",
+		"algorithm": "cpp"
 	}
 }

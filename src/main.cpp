@@ -1,7 +1,6 @@
 #include <raylib.h>
 #include <vector>
 #include "Player.h"
-#include "Pipe.h"
 
 const int screenWidth = 960;
 const int screenHeight = 544;
@@ -11,6 +10,13 @@ bool isGameOver;
 Texture2D upPipeSprite;
 Texture2D downPipeSprite;
 
+typedef struct
+{
+    Texture2D sprite;
+    Rectangle bounds;
+    bool isDestroyed;
+} Pipe;
+
 std::vector<Pipe> pipes;
 
 float lastPipeSpawnTime;
@@ -19,12 +25,16 @@ void GeneratePipes()
 {
     float upPipePosition = GetRandomValue(-220, 0);
 
-    Pipe upPipe = Pipe(screenWidth, upPipePosition, upPipeSprite);
+    Rectangle upPipeBounds = {screenWidth, upPipePosition, (float)upPipeSprite.width, (float)upPipeSprite.height};
+
+    Pipe upPipe = {upPipeSprite, upPipeBounds, false};
 
     // gap size = 80.
     float downPipePosition = upPipePosition + upPipe.bounds.height + 80;
 
-    Pipe downPipe = Pipe(screenWidth, downPipePosition, downPipeSprite);
+    Rectangle downPipeBounds = {screenWidth, downPipePosition, (float)downPipeSprite.width, (float)downPipeSprite.height};
+
+    Pipe downPipe = {downPipeSprite, downPipeBounds, false};
 
     pipes.push_back(upPipe);
     pipes.push_back(downPipe);
@@ -40,12 +50,12 @@ int main()
     Texture2D background = LoadTexture("assets/images/background-day.png");
     Texture2D ground = LoadTexture("assets/images/base.png");
 
-    //divide the birds.png
-    // Texture2D birds = LoadTexture("assets/images/birds.png");
+    // divide the birds.png
+    //  Texture2D birds = LoadTexture("assets/images/birds.png");
 
     // Rectangle birdsBounds = {0.0f, 0.0f, (float)birds.width / 9, (float)birds.height};
 
-    Rectangle groundBounds = Rectangle{0, (float)(screenHeight - ground.height), screenWidth, (float)ground.height};
+    Rectangle groundBounds = {0, (float)(screenHeight - ground.height), screenWidth, (float)ground.height};
 
     upPipeSprite = LoadTexture("assets/images/pipe-green-180.png");
     downPipeSprite = LoadTexture("assets/images/pipe-green.png");
@@ -94,14 +104,27 @@ int main()
                 GeneratePipes();
             }
 
-            for (Pipe &pipe : pipes)
+            for (auto actualPipe = pipes.begin(); actualPipe != pipes.end();)
             {
-                pipe.Update(deltaTime);
+                if (!actualPipe->isDestroyed)
+                {
+                    actualPipe->bounds.x -= 150 * deltaTime;
+                }
 
-                if (CheckCollisionRecs(player.bounds, pipe.bounds))
+                if (CheckCollisionRecs(player.bounds, actualPipe->bounds))
                 {
                     isGameOver = true;
                     PlaySound(dieSound);
+                }
+
+                if (actualPipe->bounds.x < -actualPipe->bounds.width)
+                {
+                    actualPipe->isDestroyed = true;
+                    pipes.erase(actualPipe);
+                }
+                else
+                {
+                    actualPipe++;
                 }
             }
         }
@@ -117,7 +140,10 @@ int main()
 
         for (Pipe pipe : pipes)
         {
-            pipe.Draw();
+            if (!pipe.isDestroyed)
+            {
+                DrawTexture(pipe.sprite, pipe.bounds.x, pipe.bounds.y, WHITE);
+            }
         }
 
         DrawTexture(ground, 0, screenHeight - ground.height, WHITE);
