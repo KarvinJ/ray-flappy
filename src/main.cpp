@@ -129,35 +129,17 @@ int main()
 
     Player player = Player(screenWidth / 2, screenHeight / 2);
 
-    Texture2D zero = LoadTexture("assets/images/0.png");
-    Texture2D one = LoadTexture("assets/images/1.png");
-    Texture2D two = LoadTexture("assets/images/2.png");
-    Texture2D three = LoadTexture("assets/images/3.png");
-    Texture2D four = LoadTexture("assets/images/4.png");
-    Texture2D five = LoadTexture("assets/images/5.png");
-    Texture2D six = LoadTexture("assets/images/6.png");
-    Texture2D seven = LoadTexture("assets/images/7.png");
-    Texture2D eight = LoadTexture("assets/images/8.png");
-    Texture2D nine = LoadTexture("assets/images/9.png");
-
     std::vector<Texture2D> numbers;
 
-    // for (int i = 0; i < 10; i++)
-    // {
-    //     numbers.push_back(LoadTexture());
-    // }
+    std::string baseString = "assets/images/";
+    std::string fileExtension = ".png";
     
+    for (int i = 0; i < 10; i++)
+    {
+        std::string completeString = baseString + std::to_string(i) + fileExtension;
 
-    numbers.push_back(zero);
-    numbers.push_back(one);
-    numbers.push_back(two);
-    numbers.push_back(three);
-    numbers.push_back(four);
-    numbers.push_back(five);
-    numbers.push_back(six);
-    numbers.push_back(seven);
-    numbers.push_back(eight);
-    numbers.push_back(nine);
+        numbers.push_back(LoadTexture(completeString.c_str()));
+    }
 
     Texture2D birdSprites = LoadTexture("assets/images/yellow-bird.png");
 
