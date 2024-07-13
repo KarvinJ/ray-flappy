@@ -6,6 +6,9 @@ const int screenWidth = 960;
 const int screenHeight = 544;
 
 bool isGameOver;
+float startGameTimer;
+
+int score;
 
 Texture2D upPipeSprite;
 Texture2D downPipeSprite;
@@ -14,6 +17,7 @@ typedef struct
 {
     Texture2D sprite;
     Rectangle bounds;
+    bool isBehind;
     bool isDestroyed;
 } Pipe;
 
@@ -27,14 +31,14 @@ void GeneratePipes()
 
     Rectangle upPipeBounds = {screenWidth, upPipePosition, (float)upPipeSprite.width, (float)upPipeSprite.height};
 
-    Pipe upPipe = {upPipeSprite, upPipeBounds, false};
+    Pipe upPipe = {upPipeSprite, upPipeBounds, false, false};
 
     // gap size = 80.
     float downPipePosition = upPipePosition + upPipe.bounds.height + 80;
 
     Rectangle downPipeBounds = {screenWidth, downPipePosition, (float)downPipeSprite.width, (float)downPipeSprite.height};
 
-    Pipe downPipe = {downPipeSprite, downPipeBounds, false};
+    Pipe downPipe = {downPipeSprite, downPipeBounds, false, false};
 
     pipes.push_back(upPipe);
     pipes.push_back(downPipe);
@@ -42,11 +46,22 @@ void GeneratePipes()
     lastPipeSpawnTime = GetTime();
 }
 
+void ResetGame(Player &player)
+{
+    isGameOver = false;
+    score = 0;
+    startGameTimer = 0;
+    player.bounds.x = screenWidth / 2;
+    player.bounds.y = screenHeight / 2;
+    pipes.clear();
+}
+
 int main()
 {
     InitWindow(screenWidth, screenHeight, "Flappy!");
     SetTargetFPS(60);
 
+    Texture2D startGameBackground = LoadTexture("assets/images/message.png");
     Texture2D background = LoadTexture("assets/images/background-day.png");
     Texture2D ground = LoadTexture("assets/images/base.png");
 
@@ -63,6 +78,7 @@ int main()
     InitAudioDevice();
 
     Sound dieSound = LoadSound("assets/sounds/die.wav");
+    Sound crossPipeSound = LoadSound("assets/sounds/point.wav");
 
     Player player = Player(screenWidth / 2, screenHeight / 2);
 
@@ -87,10 +103,12 @@ int main()
         //     birdsBounds.x = (float)currentFrame * (float)birdsBounds.width / 9;
         // }
 
-        if (!isGameOver)
-        {
-            float deltaTime = GetFrameTime();
+        float deltaTime = GetFrameTime();
 
+        startGameTimer += deltaTime;
+
+        if (!isGameOver && startGameTimer > 1)
+        {
             player.Update(deltaTime);
 
             if (CheckCollisionRecs(player.bounds, groundBounds))
@@ -117,6 +135,18 @@ int main()
                     PlaySound(dieSound);
                 }
 
+                if (!actualPipe->isBehind && player.bounds.x > actualPipe->bounds.x)
+                {
+                    actualPipe->isBehind = true;
+
+                    // adding score for just one pipe, without this I got +2 instead of one and double the sound effect.
+                    if (actualPipe->bounds.y < player.bounds.y)
+                    {
+                        score++;
+                        PlaySound(crossPipeSound);
+                    }
+                }
+
                 if (actualPipe->bounds.x < -actualPipe->bounds.width)
                 {
                     actualPipe->isDestroyed = true;
@@ -127,6 +157,11 @@ int main()
                     actualPipe++;
                 }
             }
+        }
+
+        else if (isGameOver && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            ResetGame(player);
         }
 
         BeginDrawing();
@@ -146,10 +181,17 @@ int main()
             }
         }
 
+        DrawText(TextFormat("%i", score), screenWidth / 2, 40, 36, WHITE);
+
         DrawTexture(ground, 0, screenHeight - ground.height, WHITE);
         DrawTexture(ground, ground.width, screenHeight - ground.height, WHITE);
         DrawTexture(ground, ground.width * 2, screenHeight - ground.height, WHITE);
         DrawTexture(ground, ground.width * 3, screenHeight - ground.height, WHITE);
+
+        if (isGameOver)
+        {
+            DrawTexture(startGameBackground, screenWidth / 2 - 75, 103, WHITE);
+        }
 
         player.Draw();
 

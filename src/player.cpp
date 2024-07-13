@@ -12,8 +12,8 @@ Player::Player(float positionX, float positionY)
 
 Player::~Player()
 {
-    UnloadTexture(sprite);
-    UnloadSound(flapSound);
+    // UnloadTexture(sprite);
+    // UnloadSound(flapSound);
 }
 
 void Player::Update(float deltaTime)
