@@ -10,7 +10,7 @@ const int screenHeight = 544;
 bool isGameOver;
 float startGameTimer;
 
-int score;
+int score = 0;
 int highScore;
 
 std::vector<Vector2> groundPositions;
@@ -129,6 +129,36 @@ int main()
 
     Player player = Player(screenWidth / 2, screenHeight / 2);
 
+    Texture2D zero = LoadTexture("assets/images/0.png");
+    Texture2D one = LoadTexture("assets/images/1.png");
+    Texture2D two = LoadTexture("assets/images/2.png");
+    Texture2D three = LoadTexture("assets/images/3.png");
+    Texture2D four = LoadTexture("assets/images/4.png");
+    Texture2D five = LoadTexture("assets/images/5.png");
+    Texture2D six = LoadTexture("assets/images/6.png");
+    Texture2D seven = LoadTexture("assets/images/7.png");
+    Texture2D eight = LoadTexture("assets/images/8.png");
+    Texture2D nine = LoadTexture("assets/images/9.png");
+
+    std::vector<Texture2D> numbers;
+
+    // for (int i = 0; i < 10; i++)
+    // {
+    //     numbers.push_back(LoadTexture());
+    // }
+    
+
+    numbers.push_back(zero);
+    numbers.push_back(one);
+    numbers.push_back(two);
+    numbers.push_back(three);
+    numbers.push_back(four);
+    numbers.push_back(five);
+    numbers.push_back(six);
+    numbers.push_back(seven);
+    numbers.push_back(eight);
+    numbers.push_back(nine);
+
     Texture2D birdSprites = LoadTexture("assets/images/yellow-bird.png");
 
     Rectangle birdsBounds = {0, 0, (float)birdSprites.width / 3, (float)birdSprites.height};
@@ -154,6 +184,11 @@ int main()
             birdsBounds.x = (float)currentFrame * (float)birdSprites.width / 3;
         }
 
+        if (score == 99)
+        {
+            isGameOver = true;
+        }
+        
         float deltaTime = GetFrameTime();
 
         startGameTimer += deltaTime;
@@ -248,8 +283,31 @@ int main()
             }
         }
 
-        DrawText(TextFormat("%i", score), screenWidth / 2, 30, 36, WHITE);
-        DrawText(TextFormat("High Score: %i", highScore), 20, 30, 36, WHITE);
+        DrawText(TextFormat("High Score: "), 20, 30, 36, WHITE);
+
+        if (highScore < 10)
+        {
+            DrawTexture(numbers[highScore], 245, 30, WHITE);
+        }
+        else 
+        {
+            int tens = (int)(highScore / 10);
+            int units = (int)(highScore % 10);
+            DrawTexture(numbers[tens], 225, 30, WHITE);
+            DrawTexture(numbers[units], 245, 30, WHITE);
+        }
+
+        if (score < 10)
+        {
+            DrawTexture(numbers[score], screenWidth / 2, 30, WHITE);
+        }
+        else 
+        {
+            int tens = (int)(score / 10);
+            int units = (int)(score % 10);
+            DrawTexture(numbers[tens], screenWidth / 2 - 20, 30, WHITE);
+            DrawTexture(numbers[units], screenWidth / 2, 30, WHITE);
+        }
 
         // adding this extra rendering sprite to hide the little space between grounds in the parallax effect.
         DrawTexture(groundSprite, 0, groundYPosition, WHITE);
