@@ -12,11 +12,11 @@ class Player
 
     public:
         Rectangle bounds;
+        float gravity;
 
     private:
         Texture2D sprite;
         Sound flapSound;
         float impulse;
-        float gravity;
         float gravityIncrement;
 };

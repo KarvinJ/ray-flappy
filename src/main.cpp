@@ -1,5 +1,7 @@
 #include <raylib.h>
 #include <vector>
+#include <iostream>
+#include <fstream>
 #include "Player.h"
 
 const int screenWidth = 960;
@@ -9,6 +11,7 @@ bool isGameOver;
 float startGameTimer;
 
 int score;
+int highScore;
 
 std::vector<Vector2> groundPositions;
 
@@ -48,13 +51,51 @@ void GeneratePipes()
     lastPipeSpawnTime = GetTime();
 }
 
+int LoadHighScore()
+{
+    std::string highScoreText;
+
+    // Read from the text file
+    std::ifstream highScores("high-score.txt");
+
+    // read the firstLine of the file and store the string data in my variable highScoreText.
+    getline(highScores, highScoreText);
+
+    // Close the file
+    highScores.close();
+
+    int highScore = stoi(highScoreText);
+
+    return highScore;
+}
+
+void SaveScore()
+{
+    std::ofstream highScores("high-score.txt");
+
+    std::string scoreString = std::to_string(score);
+    // Write to the file
+    highScores << scoreString;
+
+    // Close the file
+    highScores.close();
+}
+
 void ResetGame(Player &player)
 {
+    if (score > highScore)
+    {
+        SaveScore();
+    }
+
+    highScore = LoadHighScore();
+
     isGameOver = false;
     score = 0;
     startGameTimer = 0;
     player.bounds.x = screenWidth / 2;
     player.bounds.y = screenHeight / 2;
+    player.gravity = 0;
     pipes.clear();
 }
 
@@ -62,6 +103,8 @@ int main()
 {
     InitWindow(screenWidth, screenHeight, "Flappy!");
     SetTargetFPS(60);
+
+    highScore = LoadHighScore();
 
     Texture2D startGameBackground = LoadTexture("assets/images/message.png");
     Texture2D background = LoadTexture("assets/images/background-day.png");
@@ -76,11 +119,6 @@ int main()
     groundPositions.push_back({(float)groundSprite.width * 2, groundYPosition});
     groundPositions.push_back({(float)groundSprite.width * 3, groundYPosition});
 
-    // divide the birds.png
-    //  Texture2D birds = LoadTexture("assets/images/birds.png");
-
-    // Rectangle birdsBounds = {0.0f, 0.0f, (float)birds.width / 9, (float)birds.height};
-
     upPipeSprite = LoadTexture("assets/images/pipe-green-180.png");
     downPipeSprite = LoadTexture("assets/images/pipe-green.png");
 
@@ -91,26 +129,30 @@ int main()
 
     Player player = Player(screenWidth / 2, screenHeight / 2);
 
-    // int framesCounter = 0;
-    // int framesSpeed = 8;
+    Texture2D birdSprites = LoadTexture("assets/images/yellow-bird.png");
 
-    // int currentFrame = 0;
+    Rectangle birdsBounds = {0, 0, (float)birdSprites.width / 3, (float)birdSprites.height};
+
+    int framesCounter = 0;
+    int framesSpeed = 6;
+
+    int currentFrame = 0;
 
     while (!WindowShouldClose())
     {
+        // Sprite animation
+        framesCounter++;
 
-        // framesCounter++;
+        if (framesCounter >= (60 / framesSpeed))
+        {
+            framesCounter = 0;
+            currentFrame++;
 
-        // if (framesCounter >= (60 / framesSpeed))
-        // {
-        //     framesCounter = 0;
-        //     currentFrame++;
+            if (currentFrame > 2)
+                currentFrame = 0;
 
-        //     if (currentFrame > 8)
-        //         currentFrame = 0;
-
-        //     birdsBounds.x = (float)currentFrame * (float)birdsBounds.width / 9;
-        // }
+            birdsBounds.x = (float)currentFrame * (float)birdSprites.width / 3;
+        }
 
         float deltaTime = GetFrameTime();
 
@@ -119,6 +161,12 @@ int main()
         if (!isGameOver && startGameTimer > 1)
         {
             player.Update(deltaTime);
+
+            if (player.bounds.y < -player.bounds.height)
+            {
+                isGameOver = true;
+                PlaySound(dieSound);
+            }
 
             if (CheckCollisionRecs(player.bounds, groundCollisionBounds))
             {
@@ -200,9 +248,10 @@ int main()
             }
         }
 
-        DrawText(TextFormat("%i", score), screenWidth / 2, 40, 36, WHITE);
+        DrawText(TextFormat("%i", score), screenWidth / 2, 30, 36, WHITE);
+        DrawText(TextFormat("High Score: %i", highScore), 20, 30, 36, WHITE);
 
-        //adding this extra rendering sprite to hide the little space between grounds in the parallax effect.
+        // adding this extra rendering sprite to hide the little space between grounds in the parallax effect.
         DrawTexture(groundSprite, 0, groundYPosition, WHITE);
         DrawTexture(groundSprite, groundSprite.width, groundYPosition, WHITE);
         DrawTexture(groundSprite, groundSprite.width * 2, groundYPosition, WHITE);
@@ -218,9 +267,9 @@ int main()
             DrawTexture(startGameBackground, screenWidth / 2 - 75, 103, WHITE);
         }
 
-        player.Draw();
+        // player.Draw();
 
-        // DrawTextureRec(birds, birdsBounds, {screenWidth/2, screenHeight/2}, WHITE);
+        DrawTextureRec(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y}, WHITE);
 
         EndDrawing();
     }
