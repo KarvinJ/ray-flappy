@@ -10,6 +10,8 @@ float startGameTimer;
 
 int score;
 
+std::vector<Vector2> groundPositions;
+
 Texture2D upPipeSprite;
 Texture2D downPipeSprite;
 
@@ -63,14 +65,21 @@ int main()
 
     Texture2D startGameBackground = LoadTexture("assets/images/message.png");
     Texture2D background = LoadTexture("assets/images/background-day.png");
-    Texture2D ground = LoadTexture("assets/images/base.png");
+    Texture2D groundSprite = LoadTexture("assets/images/base.png");
+
+    const float groundYPosition = screenHeight - groundSprite.height;
+
+    Rectangle groundCollisionBounds = {0, groundYPosition, screenWidth, (float)groundSprite.height};
+
+    groundPositions.push_back({0, groundYPosition});
+    groundPositions.push_back({(float)groundSprite.width, groundYPosition});
+    groundPositions.push_back({(float)groundSprite.width * 2, groundYPosition});
+    groundPositions.push_back({(float)groundSprite.width * 3, groundYPosition});
 
     // divide the birds.png
     //  Texture2D birds = LoadTexture("assets/images/birds.png");
 
     // Rectangle birdsBounds = {0.0f, 0.0f, (float)birds.width / 9, (float)birds.height};
-
-    Rectangle groundBounds = {0, (float)(screenHeight - ground.height), screenWidth, (float)ground.height};
 
     upPipeSprite = LoadTexture("assets/images/pipe-green-180.png");
     downPipeSprite = LoadTexture("assets/images/pipe-green.png");
@@ -111,7 +120,7 @@ int main()
         {
             player.Update(deltaTime);
 
-            if (CheckCollisionRecs(player.bounds, groundBounds))
+            if (CheckCollisionRecs(player.bounds, groundCollisionBounds))
             {
                 isGameOver = true;
                 PlaySound(dieSound);
@@ -157,6 +166,16 @@ int main()
                     actualPipe++;
                 }
             }
+
+            for (Vector2 &groundPosition : groundPositions)
+            {
+                groundPosition.x -= 150 * deltaTime;
+
+                if (groundPosition.x < -groundSprite.width)
+                {
+                    groundPosition.x = groundSprite.width * 3;
+                }
+            }
         }
 
         else if (isGameOver && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -183,10 +202,16 @@ int main()
 
         DrawText(TextFormat("%i", score), screenWidth / 2, 40, 36, WHITE);
 
-        DrawTexture(ground, 0, screenHeight - ground.height, WHITE);
-        DrawTexture(ground, ground.width, screenHeight - ground.height, WHITE);
-        DrawTexture(ground, ground.width * 2, screenHeight - ground.height, WHITE);
-        DrawTexture(ground, ground.width * 3, screenHeight - ground.height, WHITE);
+        //adding this extra rendering sprite to hide the little space between grounds in the parallax effect.
+        DrawTexture(groundSprite, 0, groundYPosition, WHITE);
+        DrawTexture(groundSprite, groundSprite.width, groundYPosition, WHITE);
+        DrawTexture(groundSprite, groundSprite.width * 2, groundYPosition, WHITE);
+        DrawTexture(groundSprite, groundSprite.width * 3, groundYPosition, WHITE);
+
+        for (Vector2 groundPosition : groundPositions)
+        {
+            DrawTextureV(groundSprite, groundPosition, WHITE);
+        }
 
         if (isGameOver)
         {
