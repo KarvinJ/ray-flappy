@@ -8,6 +8,7 @@ const int screenWidth = 960;
 const int screenHeight = 544;
 
 bool isGameOver;
+bool isGamePaused;
 float startGameTimer;
 
 int score = 0;
@@ -126,6 +127,7 @@ int main()
 
     InitAudioDevice();
 
+    Sound pauseSound = LoadSound("assets/sounds/magic.wav");
     Sound dieSound = LoadSound("assets/sounds/die.wav");
     Sound crossPipeSound = LoadSound("assets/sounds/point.wav");
 
@@ -158,8 +160,14 @@ int main()
 
     while (!WindowShouldClose())
     {
+        if (IsKeyPressed(KEY_F))
+        {
+            isGamePaused = !isGamePaused;
+            lastPipeSpawnTime = 0;
+            PlaySound(pauseSound);
+        }
 
-        if (!isGameOver)
+        if (!isGameOver && !isGamePaused)
         {
             // Sprite animation
             framesCounter++;
@@ -185,7 +193,7 @@ int main()
 
         startGameTimer += deltaTime;
 
-        if (!isGameOver && startGameTimer > 1)
+        if (!isGameOver && !isGamePaused && startGameTimer > 1)
         {
             player.Update(deltaTime);
 
@@ -342,7 +350,7 @@ int main()
                 DrawTexturePro(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y, player.bounds.width, player.bounds.height}, {0, 0}, initialAngle, WHITE);
             }
 
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+            if (IsKeyPressed(KEY_SPACE) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 shouldRotateUp = true;
                 upRotationTimer = 1;
@@ -352,7 +360,7 @@ int main()
 
             if (downRotationTimer > 0.5f)
             {
-                if (initialAngle <= 90 && !isGameOver)
+                if (initialAngle <= 90 && !isGameOver && !isGamePaused)
                 {
                     initialAngle += 2;
                 }
