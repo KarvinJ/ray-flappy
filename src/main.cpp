@@ -133,7 +133,7 @@ int main()
 
     std::string baseString = "assets/images/";
     std::string fileExtension = ".png";
-    
+
     for (int i = 0; i < 10; i++)
     {
         std::string completeString = baseString + std::to_string(i) + fileExtension;
@@ -149,6 +149,8 @@ int main()
     int framesSpeed = 6;
 
     int currentFrame = 0;
+
+    float rotationTimer = 0;
 
     while (!WindowShouldClose())
     {
@@ -170,7 +172,7 @@ int main()
         {
             isGameOver = true;
         }
-        
+
         float deltaTime = GetFrameTime();
 
         startGameTimer += deltaTime;
@@ -271,7 +273,7 @@ int main()
         {
             DrawTexture(numbers[highScore], 245, 30, WHITE);
         }
-        else 
+        else
         {
             int tens = (int)(highScore / 10);
             int units = (int)(highScore % 10);
@@ -283,7 +285,7 @@ int main()
         {
             DrawTexture(numbers[score], screenWidth / 2, 30, WHITE);
         }
-        else 
+        else
         {
             int tens = (int)(score / 10);
             int units = (int)(score % 10);
@@ -307,7 +309,23 @@ int main()
             DrawTexture(startGameBackground, screenWidth / 2 - 75, 103, WHITE);
         }
 
-        DrawTextureRec(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y}, WHITE);
+        rotationTimer += deltaTime;
+
+        if (rotationTimer < 1)
+        {
+            DrawTextureRec(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y}, WHITE);
+        }
+
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            // DrawTexturePro(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y, player.bounds.width, player.bounds.height}, {0, 0}, -45, WHITE);
+            rotationTimer = 0;
+        }
+        // Trying to rotate the sprite gradually. 
+        if (rotationTimer > 1)
+        {
+            DrawTexturePro(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y, player.bounds.width, player.bounds.height}, {0, 0}, 45, WHITE);
+        }
 
         EndDrawing();
     }
