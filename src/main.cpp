@@ -260,7 +260,8 @@ int main()
 
         BeginDrawing();
 
-        ClearBackground(BLACK);
+        //Unnecessary call since I have background Image. 
+        // ClearBackground(BLACK);
 
         DrawTexture(background, 0, 0, WHITE);
         DrawTexture(background, background.width, 0, WHITE);
