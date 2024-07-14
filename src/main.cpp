@@ -11,6 +11,7 @@ bool isGameOver;
 float startGameTimer;
 
 int score = 0;
+float initialAngle = 0;
 int highScore;
 
 std::vector<Vector2> groundPositions;
@@ -93,6 +94,7 @@ void ResetGame(Player &player)
     isGameOver = false;
     score = 0;
     startGameTimer = 0;
+    initialAngle = 0;
     player.bounds.x = screenWidth / 2;
     player.bounds.y = screenHeight / 2;
     player.gravity = 0;
@@ -150,22 +152,28 @@ int main()
 
     int currentFrame = 0;
 
-    float rotationTimer = 0;
+    bool shouldRotateUp = false;
+    float downRotationTimer = 0;
+    float upRotationTimer = 0;
 
     while (!WindowShouldClose())
     {
-        // Sprite animation
-        framesCounter++;
 
-        if (framesCounter >= (60 / framesSpeed))
+        if (!isGameOver)
         {
-            framesCounter = 0;
-            currentFrame++;
+            // Sprite animation
+            framesCounter++;
 
-            if (currentFrame > 2)
-                currentFrame = 0;
+            if (framesCounter >= (60 / framesSpeed))
+            {
+                framesCounter = 0;
+                currentFrame++;
 
-            birdsBounds.x = (float)currentFrame * (float)birdSprites.width / 3;
+                if (currentFrame > 2)
+                    currentFrame = 0;
+
+                birdsBounds.x = (float)currentFrame * (float)birdSprites.width / 3;
+            }
         }
 
         if (score == 99)
@@ -309,22 +317,51 @@ int main()
             DrawTexture(startGameBackground, screenWidth / 2 - 75, 103, WHITE);
         }
 
-        rotationTimer += deltaTime;
+        if (startGameTimer > 1)
+        {
+            downRotationTimer += deltaTime;
 
-        if (rotationTimer < 1)
-        {
-            DrawTextureRec(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y}, WHITE);
-        }
+            if (downRotationTimer < 0.5f)
+            {
+                DrawTexturePro(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y, player.bounds.width, player.bounds.height}, {0, 0}, initialAngle, WHITE);
+            }
 
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-        {
-            // DrawTexturePro(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y, player.bounds.width, player.bounds.height}, {0, 0}, -45, WHITE);
-            rotationTimer = 0;
+            if (shouldRotateUp)
+            {
+                if (upRotationTimer > 0)
+                {
+                    upRotationTimer -= deltaTime;
+                }
+
+                if (upRotationTimer <= 0)
+                {
+                    shouldRotateUp = false;
+                }
+
+                DrawTexturePro(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y, player.bounds.width, player.bounds.height}, {0, 0}, initialAngle, WHITE);
+            }
+
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+            {
+                shouldRotateUp = true;
+                upRotationTimer = 1;
+                downRotationTimer = 0;
+                initialAngle = -20;
+            }
+
+            if (downRotationTimer > 0.5f)
+            {
+                if (initialAngle <= 90 && !isGameOver)
+                {
+                    initialAngle += 2;
+                }
+
+                DrawTexturePro(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y, player.bounds.width, player.bounds.height}, {0, 0}, initialAngle, WHITE);
+            }
         }
-        // Trying to rotate the sprite gradually. 
-        if (rotationTimer > 1)
+        else
         {
-            DrawTexturePro(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y, player.bounds.width, player.bounds.height}, {0, 0}, 45, WHITE);
+            DrawTexturePro(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y, player.bounds.width, player.bounds.height}, {0, 0}, 0, WHITE);
         }
 
         EndDrawing();
