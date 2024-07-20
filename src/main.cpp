@@ -332,7 +332,7 @@ int main()
 
             if (downRotationTimer < 0.5f)
             {
-                DrawTexturePro(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y, player.bounds.width, player.bounds.height}, {0, 0}, initialAngle, WHITE);
+                DrawTexturePro(birdSprites, birdsBounds, player.bounds, {0, 0}, initialAngle, WHITE);
             }
 
             if (shouldRotateUp)
@@ -347,7 +347,7 @@ int main()
                     shouldRotateUp = false;
                 }
 
-                DrawTexturePro(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y, player.bounds.width, player.bounds.height}, {0, 0}, initialAngle, WHITE);
+                DrawTexturePro(birdSprites, birdsBounds, player.bounds, {0, 0}, initialAngle, WHITE);
             }
 
             if (IsKeyPressed(KEY_SPACE) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -365,12 +365,12 @@ int main()
                     initialAngle += 2;
                 }
 
-                DrawTexturePro(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y, player.bounds.width, player.bounds.height}, {0, 0}, initialAngle, WHITE);
+                DrawTexturePro(birdSprites, birdsBounds, player.bounds, {0, 0}, initialAngle, WHITE);
             }
         }
         else
         {
-            DrawTexturePro(birdSprites, birdsBounds, {screenWidth / 2, player.bounds.y, player.bounds.width, player.bounds.height}, {0, 0}, 0, WHITE);
+            DrawTexturePro(birdSprites, birdsBounds, player.bounds, {0, 0}, 0, WHITE);
         }
 
         EndDrawing();
