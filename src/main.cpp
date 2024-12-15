@@ -2,10 +2,10 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include "Player.h"
+// #include "Player.h"
 
-const int screenWidth = 960;
-const int screenHeight = 544;
+const int SCREEN_WIDTH = 960;
+const int SCREEN_HEIGHT = 544;
 
 bool isGameOver;
 bool isGamePaused;
@@ -15,10 +15,22 @@ int score = 0;
 float initialAngle = 0;
 int highScore;
 
+float impulse = -10000;
+float gravity = 0;
+float gravityIncrement = 400;
+
 std::vector<Vector2> groundPositions;
 
 Texture2D upPipeSprite;
 Texture2D downPipeSprite;
+
+typedef struct
+{
+    Rectangle bounds;
+    Texture2D sprite;
+} Player;
+
+Player player;
 
 typedef struct
 {
@@ -32,18 +44,18 @@ std::vector<Pipe> pipes;
 
 float lastPipeSpawnTime;
 
-void GeneratePipes()
+void generatePipes()
 {
     float upPipePosition = GetRandomValue(-220, 0);
 
-    Rectangle upPipeBounds = {screenWidth, upPipePosition, (float)upPipeSprite.width, (float)upPipeSprite.height};
+    Rectangle upPipeBounds = {SCREEN_WIDTH, upPipePosition, (float)upPipeSprite.width, (float)upPipeSprite.height};
 
     Pipe upPipe = {upPipeSprite, upPipeBounds, false, false};
 
     // gap size = 80.
     float downPipePosition = upPipePosition + upPipe.bounds.height + 80;
 
-    Rectangle downPipeBounds = {screenWidth, downPipePosition, (float)downPipeSprite.width, (float)downPipeSprite.height};
+    Rectangle downPipeBounds = {SCREEN_WIDTH, downPipePosition, (float)downPipeSprite.width, (float)downPipeSprite.height};
 
     Pipe downPipe = {downPipeSprite, downPipeBounds, false, false};
 
@@ -53,7 +65,7 @@ void GeneratePipes()
     lastPipeSpawnTime = GetTime();
 }
 
-int LoadHighScore()
+int loadHighScore()
 {
     std::string highScoreText;
 
@@ -71,7 +83,7 @@ int LoadHighScore()
     return highScore;
 }
 
-void SaveScore()
+void saveHighScore()
 {
     std::ofstream highScores("high-score.txt");
 
@@ -83,39 +95,39 @@ void SaveScore()
     highScores.close();
 }
 
-void ResetGame(Player &player)
+void resetGame()
 {
     if (score > highScore)
     {
-        SaveScore();
+        saveHighScore();
     }
 
-    highScore = LoadHighScore();
+    highScore = loadHighScore();
 
     isGameOver = false;
     score = 0;
     startGameTimer = 0;
     initialAngle = 0;
-    player.bounds.x = screenWidth / 2;
-    player.bounds.y = screenHeight / 2;
-    player.gravity = 0;
+    player.bounds.x = SCREEN_WIDTH / 2;
+    player.bounds.y = SCREEN_HEIGHT / 2;
+    gravity = 0;
     pipes.clear();
 }
 
 int main()
 {
-    InitWindow(screenWidth, screenHeight, "Flappy!");
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Flappy!");
     SetTargetFPS(60);
 
-    highScore = LoadHighScore();
+    highScore = loadHighScore();
 
     Texture2D startGameBackground = LoadTexture("assets/images/message.png");
     Texture2D background = LoadTexture("assets/images/background-day.png");
     Texture2D groundSprite = LoadTexture("assets/images/base.png");
 
-    const float groundYPosition = screenHeight - groundSprite.height;
+    const float groundYPosition = SCREEN_HEIGHT - groundSprite.height;
 
-    Rectangle groundCollisionBounds = {0, groundYPosition, screenWidth, (float)groundSprite.height};
+    Rectangle groundCollisionBounds = {0, groundYPosition, SCREEN_WIDTH, (float)groundSprite.height};
 
     groundPositions.push_back({0, groundYPosition});
     groundPositions.push_back({(float)groundSprite.width, groundYPosition});
@@ -131,7 +143,11 @@ int main()
     Sound dieSound = LoadSound("assets/sounds/die.wav");
     Sound crossPipeSound = LoadSound("assets/sounds/point.wav");
 
-    Player player = Player(screenWidth / 2, screenHeight / 2);
+    Sound flapSound = LoadSound("assets/sounds/wing.wav");
+
+    Texture2D playerSprite = LoadTexture("assets/images/yellowbird-midflap.png");
+    Rectangle bounds = Rectangle{SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, (float)playerSprite.width, (float)playerSprite.height};
+    player = {bounds, playerSprite};
 
     std::vector<Texture2D> numbers;
     numbers.reserve(10);
@@ -146,7 +162,6 @@ int main()
     }
 
     Texture2D birdSprites = LoadTexture("assets/images/yellow-bird.png");
-
     Rectangle birdsBounds = {0, 0, (float)birdSprites.width / 3, (float)birdSprites.height};
 
     int framesCounter = 0;
@@ -195,7 +210,17 @@ int main()
 
         if (!isGameOver && !isGamePaused && startGameTimer > 1)
         {
-            player.Update(deltaTime);
+            if (player.bounds.y < GetScreenHeight() - player.bounds.width)
+            {
+                player.bounds.y += gravity * deltaTime;
+                gravity += gravityIncrement * deltaTime;
+            }
+
+            if (IsKeyPressed(KEY_SPACE) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+            {
+                gravity = impulse * deltaTime;
+                PlaySound(flapSound);
+            }
 
             if (player.bounds.y < -player.bounds.height)
             {
@@ -211,7 +236,7 @@ int main()
 
             if (GetTime() - lastPipeSpawnTime >= 2)
             {
-                GeneratePipes();
+                generatePipes();
             }
 
             for (auto actualPipe = pipes.begin(); actualPipe != pipes.end();)
@@ -263,13 +288,12 @@ int main()
 
         else if (isGameOver && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
-            ResetGame(player);
+            resetGame();
         }
 
         BeginDrawing();
 
-        //Unnecessary call since I have background Image. 
-        // ClearBackground(BLACK);
+        ClearBackground(BLACK);
 
         DrawTexture(background, 0, 0, WHITE);
         DrawTexture(background, background.width, 0, WHITE);
@@ -300,14 +324,14 @@ int main()
 
         if (score < 10)
         {
-            DrawTexture(numbers[score], screenWidth / 2, 30, WHITE);
+            DrawTexture(numbers[score], SCREEN_WIDTH / 2, 30, WHITE);
         }
         else
         {
             int tens = (int)(score / 10);
             int units = (int)(score % 10);
-            DrawTexture(numbers[tens], screenWidth / 2 - 20, 30, WHITE);
-            DrawTexture(numbers[units], screenWidth / 2, 30, WHITE);
+            DrawTexture(numbers[tens], SCREEN_WIDTH / 2 - 20, 30, WHITE);
+            DrawTexture(numbers[units], SCREEN_WIDTH / 2, 30, WHITE);
         }
 
         // adding this extra rendering sprite to hide the little space between grounds in the parallax effect.
@@ -323,7 +347,7 @@ int main()
 
         if (isGameOver)
         {
-            DrawTexture(startGameBackground, screenWidth / 2 - 75, 103, WHITE);
+            DrawTexture(startGameBackground, SCREEN_WIDTH / 2 - 75, 103, WHITE);
         }
 
         if (startGameTimer > 1)
