@@ -134,6 +134,7 @@ int main()
     Player player = Player(screenWidth / 2, screenHeight / 2);
 
     std::vector<Texture2D> numbers;
+    numbers.reserve(10);
 
     std::string baseString = "assets/images/";
     std::string fileExtension = ".png";
@@ -141,7 +142,6 @@ int main()
     for (int i = 0; i < 10; i++)
     {
         std::string completeString = baseString + std::to_string(i) + fileExtension;
-
         numbers.push_back(LoadTexture(completeString.c_str()));
     }
 
