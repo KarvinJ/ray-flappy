@@ -2,7 +2,6 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-// #include "Player.h"
 
 const int SCREEN_WIDTH = 960;
 const int SCREEN_HEIGHT = 544;
@@ -11,12 +10,12 @@ bool isGameOver;
 bool isGamePaused;
 float startGameTimer;
 
-int score = 0;
-float initialAngle = 0;
+int score;
+float initialAngle;
 int highScore;
 
 float impulse = -10000;
-float gravity = 0;
+float gravity;
 float gravityIncrement = 400;
 
 std::vector<Vector2> groundPositions;
