@@ -122,7 +122,7 @@ void resetGame()
 
 void update(float deltaTime)
 {
-    if (player.bounds.y < GetScreenHeight() - player.bounds.width)
+    if (player.bounds.y < SCREEN_HEIGHT - player.bounds.width)
     {
         player.bounds.y += gravity * deltaTime;
         gravity += gravityIncrement * deltaTime;
