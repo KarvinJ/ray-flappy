@@ -18,10 +18,17 @@ float impulse = -10000;
 float gravity;
 float gravityIncrement = 400;
 
+Sound dieSound;
+Sound crossPipeSound;
+Sound flapSound;
+
 std::vector<Vector2> groundPositions;
+
+Rectangle groundCollisionBounds;
 
 Texture2D upPipeSprite;
 Texture2D downPipeSprite;
+Texture2D groundSprite;
 
 typedef struct
 {
@@ -113,6 +120,84 @@ void resetGame()
     pipes.clear();
 }
 
+void update(float deltaTime)
+{
+    if (player.bounds.y < GetScreenHeight() - player.bounds.width)
+    {
+        player.bounds.y += gravity * deltaTime;
+        gravity += gravityIncrement * deltaTime;
+    }
+
+    if (IsKeyPressed(KEY_SPACE) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    {
+        gravity = impulse * deltaTime;
+        PlaySound(flapSound);
+    }
+
+    if (player.bounds.y < -player.bounds.height)
+    {
+        isGameOver = true;
+        PlaySound(dieSound);
+    }
+
+    if (CheckCollisionRecs(player.bounds, groundCollisionBounds))
+    {
+        isGameOver = true;
+        PlaySound(dieSound);
+    }
+
+    if (GetTime() - lastPipeSpawnTime >= 2)
+    {
+        generatePipes();
+    }
+
+    for (auto actualPipe = pipes.begin(); actualPipe != pipes.end();)
+    {
+        if (!actualPipe->isDestroyed)
+        {
+            actualPipe->bounds.x -= 150 * deltaTime;
+        }
+
+        if (CheckCollisionRecs(player.bounds, actualPipe->bounds))
+        {
+            isGameOver = true;
+            PlaySound(dieSound);
+        }
+
+        if (!actualPipe->isBehind && player.bounds.x > actualPipe->bounds.x)
+        {
+            actualPipe->isBehind = true;
+
+            // adding score for just one pipe, without this I got +2 instead of one and double the sound effect.
+            if (actualPipe->bounds.y < player.bounds.y)
+            {
+                score++;
+                PlaySound(crossPipeSound);
+            }
+        }
+
+        if (actualPipe->bounds.x < -actualPipe->bounds.width)
+        {
+            actualPipe->isDestroyed = true;
+            pipes.erase(actualPipe);
+        }
+        else
+        {
+            actualPipe++;
+        }
+    }
+
+    for (Vector2 &groundPosition : groundPositions)
+    {
+        groundPosition.x -= 150 * deltaTime;
+
+        if (groundPosition.x < -groundSprite.width)
+        {
+            groundPosition.x = groundSprite.width * 3;
+        }
+    }
+}
+
 int main()
 {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Flappy!");
@@ -122,16 +207,16 @@ int main()
 
     Texture2D startGameBackground = LoadTexture("assets/images/message.png");
     Texture2D background = LoadTexture("assets/images/background-day.png");
-    Texture2D groundSprite = LoadTexture("assets/images/base.png");
+    groundSprite = LoadTexture("assets/images/base.png");
 
-    const float groundYPosition = SCREEN_HEIGHT - groundSprite.height;
+    const float GROUND_Y_POSITION = SCREEN_HEIGHT - groundSprite.height;
 
-    Rectangle groundCollisionBounds = {0, groundYPosition, SCREEN_WIDTH, (float)groundSprite.height};
+    groundCollisionBounds = {0, GROUND_Y_POSITION, SCREEN_WIDTH, (float)groundSprite.height};
 
-    groundPositions.push_back({0, groundYPosition});
-    groundPositions.push_back({(float)groundSprite.width, groundYPosition});
-    groundPositions.push_back({(float)groundSprite.width * 2, groundYPosition});
-    groundPositions.push_back({(float)groundSprite.width * 3, groundYPosition});
+    groundPositions.push_back({0, GROUND_Y_POSITION});
+    groundPositions.push_back({(float)groundSprite.width, GROUND_Y_POSITION});
+    groundPositions.push_back({(float)groundSprite.width * 2, GROUND_Y_POSITION});
+    groundPositions.push_back({(float)groundSprite.width * 3, GROUND_Y_POSITION});
 
     upPipeSprite = LoadTexture("assets/images/pipe-green-180.png");
     downPipeSprite = LoadTexture("assets/images/pipe-green.png");
@@ -139,13 +224,12 @@ int main()
     InitAudioDevice();
 
     Sound pauseSound = LoadSound("assets/sounds/magic.wav");
-    Sound dieSound = LoadSound("assets/sounds/die.wav");
-    Sound crossPipeSound = LoadSound("assets/sounds/point.wav");
-
-    Sound flapSound = LoadSound("assets/sounds/wing.wav");
+    dieSound = LoadSound("assets/sounds/die.wav");
+    crossPipeSound = LoadSound("assets/sounds/point.wav");
+    flapSound = LoadSound("assets/sounds/wing.wav");
 
     Texture2D playerSprite = LoadTexture("assets/images/yellowbird-midflap.png");
-    Rectangle bounds = Rectangle{SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, (float)playerSprite.width, (float)playerSprite.height};
+    Rectangle bounds = {SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, (float)playerSprite.width, (float)playerSprite.height};
     player = {bounds, playerSprite};
 
     std::vector<Texture2D> numbers;
@@ -181,6 +265,11 @@ int main()
             PlaySound(pauseSound);
         }
 
+        if (score == 99)
+        {
+            isGameOver = true;
+        }
+
         if (!isGameOver && !isGamePaused)
         {
             // Sprite animation
@@ -192,15 +281,12 @@ int main()
                 currentFrame++;
 
                 if (currentFrame > 2)
+                {
                     currentFrame = 0;
+                }
 
                 birdsBounds.x = (float)currentFrame * (float)birdSprites.width / 3;
             }
-        }
-
-        if (score == 99)
-        {
-            isGameOver = true;
         }
 
         float deltaTime = GetFrameTime();
@@ -209,83 +295,10 @@ int main()
 
         if (!isGameOver && !isGamePaused && startGameTimer > 1)
         {
-            if (player.bounds.y < GetScreenHeight() - player.bounds.width)
-            {
-                player.bounds.y += gravity * deltaTime;
-                gravity += gravityIncrement * deltaTime;
-            }
-
-            if (IsKeyPressed(KEY_SPACE) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-            {
-                gravity = impulse * deltaTime;
-                PlaySound(flapSound);
-            }
-
-            if (player.bounds.y < -player.bounds.height)
-            {
-                isGameOver = true;
-                PlaySound(dieSound);
-            }
-
-            if (CheckCollisionRecs(player.bounds, groundCollisionBounds))
-            {
-                isGameOver = true;
-                PlaySound(dieSound);
-            }
-
-            if (GetTime() - lastPipeSpawnTime >= 2)
-            {
-                generatePipes();
-            }
-
-            for (auto actualPipe = pipes.begin(); actualPipe != pipes.end();)
-            {
-                if (!actualPipe->isDestroyed)
-                {
-                    actualPipe->bounds.x -= 150 * deltaTime;
-                }
-
-                if (CheckCollisionRecs(player.bounds, actualPipe->bounds))
-                {
-                    isGameOver = true;
-                    PlaySound(dieSound);
-                }
-
-                if (!actualPipe->isBehind && player.bounds.x > actualPipe->bounds.x)
-                {
-                    actualPipe->isBehind = true;
-
-                    // adding score for just one pipe, without this I got +2 instead of one and double the sound effect.
-                    if (actualPipe->bounds.y < player.bounds.y)
-                    {
-                        score++;
-                        PlaySound(crossPipeSound);
-                    }
-                }
-
-                if (actualPipe->bounds.x < -actualPipe->bounds.width)
-                {
-                    actualPipe->isDestroyed = true;
-                    pipes.erase(actualPipe);
-                }
-                else
-                {
-                    actualPipe++;
-                }
-            }
-
-            for (Vector2 &groundPosition : groundPositions)
-            {
-                groundPosition.x -= 150 * deltaTime;
-
-                if (groundPosition.x < -groundSprite.width)
-                {
-                    groundPosition.x = groundSprite.width * 3;
-                }
-            }
+            update(deltaTime);
         }
 
-        else if (isGameOver && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        else if (isGameOver && (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsKeyPressed(KEY_SPACE)))
         {
             resetGame();
         }
@@ -334,10 +347,10 @@ int main()
         }
 
         // adding this extra rendering sprite to hide the little space between grounds in the parallax effect.
-        DrawTexture(groundSprite, 0, groundYPosition, WHITE);
-        DrawTexture(groundSprite, groundSprite.width, groundYPosition, WHITE);
-        DrawTexture(groundSprite, groundSprite.width * 2, groundYPosition, WHITE);
-        DrawTexture(groundSprite, groundSprite.width * 3, groundYPosition, WHITE);
+        DrawTexture(groundSprite, 0, GROUND_Y_POSITION, WHITE);
+        DrawTexture(groundSprite, groundSprite.width, GROUND_Y_POSITION, WHITE);
+        DrawTexture(groundSprite, groundSprite.width * 2, GROUND_Y_POSITION, WHITE);
+        DrawTexture(groundSprite, groundSprite.width * 3, GROUND_Y_POSITION, WHITE);
 
         for (Vector2 groundPosition : groundPositions)
         {
@@ -399,10 +412,21 @@ int main()
         EndDrawing();
     }
 
+    for (Texture2D number : numbers)
+    {
+        UnloadTexture(number);
+    }
+
+    UnloadTexture(playerSprite);
+    UnloadTexture(birdSprites);
     UnloadTexture(upPipeSprite);
     UnloadTexture(downPipeSprite);
+    
     UnloadSound(dieSound);
-    CloseAudioDevice();
+    UnloadSound(flapSound);
+    UnloadSound(pauseSound);
+    UnloadSound(crossPipeSound);
 
+    CloseAudioDevice();
     CloseWindow();
 }
