@@ -71,17 +71,40 @@ void generatePipes()
     lastPipeSpawnTime = GetTime();
 }
 
+void saveScore()
+{
+    std::ofstream highScores("assets/high-score.txt");
+
+    std::string scoreString = std::to_string(score);
+
+    highScores << scoreString;
+
+    highScores.close();
+}
+
 int loadHighScore()
 {
     std::string highScoreText;
 
-    // Read from the text file
-    std::ifstream highScores("high-score.txt");
+    std::ifstream highScores("assets/high-score.txt");
 
-    // read the firstLine of the file and store the string data in my variable highScoreText.
+    if (!highScores.is_open())
+    {
+        saveScore();
+
+        std::ifstream auxHighScores("assets/high-score.txt");
+
+        getline(auxHighScores, highScoreText);
+
+        highScores.close();
+
+        int highScore = stoi(highScoreText);
+
+        return highScore;
+    }
+
     getline(highScores, highScoreText);
 
-    // Close the file
     highScores.close();
 
     int highScore = stoi(highScoreText);
@@ -89,23 +112,11 @@ int loadHighScore()
     return highScore;
 }
 
-void saveHighScore()
-{
-    std::ofstream highScores("high-score.txt");
-
-    std::string scoreString = std::to_string(score);
-    // Write to the file
-    highScores << scoreString;
-
-    // Close the file
-    highScores.close();
-}
-
 void resetGame()
 {
     if (score > highScore)
     {
-        saveHighScore();
+        saveScore();
     }
 
     highScore = loadHighScore();
